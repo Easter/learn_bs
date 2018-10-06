@@ -1,0 +1,21 @@
+Beautiful Soup笔记：
+字符串前加u代表unicode编码；
+Tag:标签：：
+例如：<b class="boldest">Extremely bold</b>
+	1:tag.name :: 
+		# u'b'
+	2:tag.attribute ::即指tag的属性
+		本例中有class属性，值为“blodest”
+		tag['calss']:
+		# u'boldest'
+		#也可以直接‘点’取所有属性以字典形式展示
+		tag.arrts
+		#{u'class':u'boldest'}
+		tag的属性可以被添加，删除或修改，tag的属性操作与字典一样
+		tag['calss'] = 'verybold'
+		tag['id'] = 1
+		tag:
+		# <b class="vreyblod" id="1">Extremely bold</b>
+		del tag['calss']
+		del tag['id']
+		2.1:多值属性
