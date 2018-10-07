@@ -45,8 +45,8 @@ Beautiful Soup学习笔记：
 				# <p>Back to the<a rel='index content'>homepage</a></p>
 	
 2：可以遍历的字符串：：
-##字符串常被包含在tag内。BeautifulSoup用NavigableString 类包装tag中的字符串
-	tag.string
+	字符串常被包含在tag内。BeautifulSoup用NavigableString 类包装tag中的字符串
+	1:tag.string
 	# u'Extremely bold'
 	type(tag.string)
 	# <class ''bs4.element.NavigableString>
@@ -56,30 +56,30 @@ Beautiful Soup学习笔记：
 	# u'Extremely bold'
 	type(unicode_string)
 	# <type 'unicode'>
-	tag中包含的字符串不能被编辑，但是可以被替换成其他的字符串，用replace_with()方法：
-	tag.string.replace_with("No longer bold")
-	tag.string
-	# No longer bold
-	# tag中字符串不支持.contends或.string属性或find()
+	2:tag中包含的字符串不能被编辑，但是可以被替换成其他的字符串，用replace_with()方法：
+		tag.string.replace_with("No longer bold")
+		tag.string
+		# No longer bold
+		# tag中字符串不支持.contents或.string属性或find()
 3:BeautifulSoup:
-//BeautifulSoup对象表示的是一个文档的全部内容，大部分时候，可以把它当作Tag对象，它支持遍历文档树和搜索文档树中描述的大部分方法
-	BeautifulSoup.name
+	BeautifulSoup对象表示的是一个文档的全部内容，大部分时候，可以把它当作Tag对象，它支持遍历文档树和搜索文档树中描述的大部分方法
+	1:BeautifulSoup.name
 	# u'document'
 	注释及特殊字符串
-	Tag,NavigableString,BeautifulSoup几乎覆盖了html和lxml的所有内容，但是还有一些特殊对象。容易让人担心的内容是文档的注释部分：
-	markup = "<b><!--Hey,buddy.Want to buy a used parser?--></b>"
-	soup = BeautifulSoup(markup)
-	comment = soup.b.string
-	type(comment)
-	# <class 'bs4.element.Comment'>
-	comment
-	# 'Hey,buddy,Want to buy a used parser?'
-	但是当他出现在HTML文档中时，Comment对象会使用特殊的格式输出//注释形式的字符串都以Commend类型呈现在HTM中
-	print(soup.b.prettify)
-	#<b>
+	2:Tag,NavigableString,BeautifulSoup几乎覆盖了html和lxml的所有内容，但是还有一些特殊对象。容易让人担心的内容是文档的注释部分：
+		markup = "<b><!--Hey,buddy.Want to buy a used parser?--></b>"
+		soup = BeautifulSoup(markup)
+		comment = soup.b.string
+		type(comment)
+		# <class 'bs4.element.Comment'>
+		comment
+		# 'Hey,buddy,Want to buy a used parser?'
+	3:但是当他出现在HTML文档中时，Comment对象会使用特殊的格式输出//注释形式的字符串都以Commend类型呈现在HTM中
+		print(soup.b.prettify)
+		#<b>
 		<!--Hey,buddy.Want to buy a used parser?-->
-	</b>
-	BeautifulSoup定义的其他类型都可能会出现在XML的文档中，BeautifulSoup中文文档可查//都是NavigableString的子类
+		</b>
+		BeautifulSoup定义的其他类型都可能会出现在XML的文档中，BeautifulSoup中文文档可查//都是NavigableString的子类
 	
 4:遍历文档树：：
 爱丽丝梦游仙境文档当作例子
@@ -148,13 +148,87 @@ soup = BeautifulSoup(html_doc, 'html.parser')
 				for child in title.children:
 					print (child)
 					# The Dormouse's story
-			3：.descendants
-				.contents和.children属性仅包含tag的直接子节点，例如head的直接子节点为title,
-				但是title的直接子节点字符串"The Dormouse's story"也是head的子孙节点.descendants可以对tag的子孙节点进行递归循环
-				for child in head_tag.descendants:
-					print child
-					# <title>The Dormouse's story</title>
-					# The Dormouse's story
+		4.2.6：.descendants
+			.contents和.children属性仅包含tag的直接子节点，例如head的直接子节点为title,
+			但是title的直接子节点字符串"The Dormouse's story"也是head的子孙节点.descendants可以对tag的子孙节点进行递归循环
+			for child in head_tag.descendants:
+				print child
+				# <title>The Dormouse's story</title>
+				# The Dormouse's story
+		4.2.7：.string
+			如果一个tag只有一个NavigableString类型子节点，那么这个tag可以使用.string得到子节点：
+			title.string
+			# u'The Dormouse's story'
+			如果一个tag仅有一个子节点，那么这个tag也可以使用.string方法，输出结果与当前唯一子节点的.string相同：
+			head_tag.string
+			# u'The Dormouse's story'
+			但是如果tag包含了多个子节点，那么tag就无法确定调用哪个子节点的内容，.string的输出结果为None
+		4.2.8: .strings和stripped_strings
+			如果一个tag中包含了多个字符串，可以用.strings获取//返回类型未知，以后再考察
+			for string in soup.stings:
+			# u'soup中的所有字符串'
+			但是得到的结果中有很多空格或空行，可以用stripped_strings去除多余的空白：
+			for string in soup.stripped_strings:
+			# u'没有空格的字符串'
+	4.2：父节点：
+		#继续分析文档树，每个tag或字符串都有父节点：被包含在某个tag中
+		4.2.1：.parent
+			title_tag = soup.title
+			title_tag.parent
+			# <head><title>The Dormouse's story</title></head>
+			title_tag.string.parent
+			# <title>The Dormouse's story</title>
+			文档的顶层节点比如<html>的父节点是BeautifulSoup对象：
+			html_tag = soup.html
+			type(html_tag.parent)
+			# <class 'bs4.BeautifulSoup'>
+			BeautifulSoup对象的.parent是None
+			print (soup.parent)
+			# None
+		4.2.2：.parents
+			通过.parents属性可以递归到元素的所有父类节点，下面使用.parents方法遍历<a>标签到根节点的所有节点
+			link = soup.a
+			link
+			# <a class="sister" href="http://example.com/elsie" id="link1">Elsie</a>
+			for parent in link.parents:
+				if parent is None:
+					print parent
+				else:
+					print parent.name
+			# p
+			# body
+			# html
+			# [document]
+			#并不会输出None并且len(list(link.parents))=4
+		4.2.3：兄弟节点：
+			看一个小例子：
+				sibling_soup = BeautifulSoup("<a><b>text1</b><c>text2</c></a>","lxml")
+			print (sibling_soup.prettify())
+			# <html>
+			#  <body>
+			#   <a>
+			#    <b>
+			#     text1
+			#    </b>
+			#    <c>
+			#     text2
+			#    </c>
+			#   </a>
+			#  </body>
+			# </html>
+			<b>标签和<c>标签在同一层，是同一个元素的子节点，所以他们可以成为兄弟节点，一段文档以标准格式输出时,兄弟节点有相同的缩进级别.在代码中也可以使用这种关系.
+			1：next_sibling 和 .previous_sibling
+				在文档树中，用.next.sibling和.previous_sibling属性查询兄弟节点：
+				sibling_soup.b.next_sibling
+				# <c>text2</c>
+				<b>标签有next.sibling属性，但是没有.previous_sibling属性，因为b标签在同级节点中是第一个，同理<c>标签没有.next_sibling属性
+				例子中的text1和text2不是兄弟节点，因为它们的父节点不同
+				实际文档中tag的.next_sibling和.previous_sibling属性通常是字符串或空白，“爱丽丝”为例：
+				<a href="http://example.com/elsie" class="sister" id="link1">Elsie</a>
+				<a href="http://example.com/lacie" class="sister" id="link2">Lacie</a>
+				<a href="http://example.com/tillie" class="sister" id="link3">Tillie</a>
+				我们一位第一个<a>标签的.next_sibling是下一个<a>标签，措了，实际上是与第二个<a>标签的顿号和换行符
+				
 		
 			
 			
