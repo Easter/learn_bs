@@ -120,33 +120,41 @@ soup = BeautifulSoup(html_doc, 'html.parser')
 			 <a href="http://example.com/lacie" class="sister" id="link2">Lacie</a>
 			 <a href="http://example.com/tillie" class="sister" id="link3">Tillie</a>]
 			 #find_all()以list形式返回搜索到的所有标签
-		4.2.5：.contends和.children
-			1:.contends
-				tag的.contends属性可以将tag的子节点以列表的形式输出
+		4.2.5：.contents和.children
+			1:.contents
+				tag的.contents属性可以将tag的子节点以列表的形式输出
 				head_tag = soup.head
 				head_tag
 				# <head><title>The Dormouse's story</title></head>
 				
-				head_tag.contends:
+				head_tag.contents:
 				# [<title>The Dormouse's story</title>]
-				title_tag = head_tag.contends[0]#列表的第一个元素
+				title_tag = head_tag.contents[0]#列表的第一个元素
 				title_tag
 				# <title>The Dormouse's story</title>
-				title_tag.contends
+				title_tag.contents
 				# [The Dormouse's story]
 				BeautifulSoup对象本身一定会包含子节点，也就是说<html>标签也是<BeautifulSoup>对象的子节点
-				len(soup.contends)
+				len(soup.contents)
 				# 1
-				soup.contends[0].name
+				soup.contents[0].name
 				# html
-				字符串没有.contends属性，因为字符串没有子节点
-				例如：text = title.contends[0]
-					  text.contends
+				字符串没有.contents属性，因为字符串没有子节点
+				例如：text = title.contents[0]
+					  text.contents
 					  # AttributeError: "NavigableString" object has no attribute 'contents'
 			2:.children
-				通过tag的.children生成器，可以对tag的子节点进行循环：
-				,,,,,,
-			 
+				通过tag的.children生成器，可以对tag的子节点进行循环：.contents也可以进行循环
+				for child in title.children:
+					print (child)
+					# The Dormouse's story
+			3：.descendants
+				.contents和.children属性仅包含tag的直接子节点，例如head的直接子节点为title,
+				但是title的直接子节点字符串"The Dormouse's story"也是head的子孙节点.descendants可以对tag的子孙节点进行递归循环
+				for child in head_tag.descendants:
+					print child
+					# <title>The Dormouse's story</title>
+					# The Dormouse's story
 		
 			
 			
