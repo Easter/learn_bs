@@ -227,8 +227,28 @@ soup = BeautifulSoup(html_doc, 'html.parser')
 				<a href="http://example.com/elsie" class="sister" id="link1">Elsie</a>
 				<a href="http://example.com/lacie" class="sister" id="link2">Lacie</a>
 				<a href="http://example.com/tillie" class="sister" id="link3">Tillie</a>
-				我们一位第一个<a>标签的.next_sibling是下一个<a>标签，措了，实际上是与第二个<a>标签的顿号和换行符
+				我们以为第一个<a>标签的.next_sibling是下一个<a>标签，措了，实际上是与第二个<a>标签的顿号和换行符
+			2：.next_siblings和.previous_siblings
+				.next_siblings和.previous_siblings可以对当前节点的兄弟节点进行迭代输出
+				for sibling in soup.a.next_siblings:
+					print repr(sibling)  # repr()返回一个对象的string格式
+				# u',\n'
+				# <a class="sister" href="http://example.com/lacie" id="link2">Lacie</a>
+				# u' and\n'
+				# <a class="sister" href="http://example.com/tillie" id="link3">Tillie</a>
+				# u'; and they lived at the bottom of a well.'
+				# None
 				
+				for sibling in soup.find(id="links").previous_siblings:
+					print repr(sibling)
+				# ' and\n'
+				# <a class="sister" href="http://example.com/lacie" id="link2">Lacie</a>
+				# u',\n'
+				# <a class="sister" href="http://example.com/elsie" id="link1">Elsie</a>
+				# u'Once upon a time there were three little sisters; and their names were\n'
+				# None
+		4.2.4：回退和前进：
+			,,,,,,
 		
 			
 			
