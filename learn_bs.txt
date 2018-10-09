@@ -404,15 +404,193 @@ soup = BeautifulSoup(html_doc, 'html.parser')
 			使用多个指定名字的参数可以同时过滤tag的多个属性：
 			soup.find_all(href=re.compile("elsie"), id='link1')
 			# [<a class="sister" href="http://example.com/elsie" id="link1">three</a>]
-			但是有些tag在搜索时不能使用，比如HTML5中的“data-*”属性：
+			但是有些tag属性在搜索时不能使用，比如HTML5中的“data-*”属性：
 			data_soup = BeautifulSoup('<div data-foo="value">foo!</div>')
 			data_soup.find_all(data-foo="value")
 			# SyntaxError: keyword can't be an expression
 			但是可以通过find_all()方法的attrs参数定义一个字典来搜索包含特殊属性的tag:
 			data_soup.find_all(attrs={"data-foo":"value"})
 			# [<div data-foo="value">foo!</div>]
-			5.2.3：按CSS搜索
-			,,,,,,
+		5.2.3：按CSS搜索
+			1:CSS类名的关键字在python中是保留字，用class做参数会导致语法错误，但是可以使用class_参数搜索有指定CSS类名的tag：
+			soup.find_all("a",class_="sister")
+			# [<a class="sister" href="http://example.com/elsie" id="link1">Elsie</a>,
+			#  <a class="sister" href="http://example.com/lacie" id="link2">Lacie</a>,
+			#  <a class="sister" href="http://example.com/tillie" id="link3">Tillie</a>]
+			2:class_参数接受不同类型的过滤器，字符串，正则表达式，方法或True
+			soup.find_all(class_=re.compile("itl"))
+			# [<p class="title"><b>The Dormouse's story</b></p>]
+			def has_six_characters(css_class):#使用属性值作为方法参数时，使用find_all方法时需要加上属性名=方法
+				return css_class is not None and len(css_class) == 6
+			soup.find_all(class_=has_six_characters)
+			# [<a class="sister" href="http://example.com/elsie" id="link1">Elsie</a>,
+			#  <a class="sister" href="http://example.com/lacie" id="link2">Lacie</a>,
+			#  <a class="sister" href="http://example.com/tillie" id="link3">Tillie</a>]
+			3：tag的class值是多值属性的话，可以通过搜索每一个值
+			css_soup = BeautifulSoup('<p class="body strikeout"></p>')
+			css_soup.find_all(class_="body")
+			# [<p class="body strikeout"></p>]
+			css_soup.find_all(class_="strikeout")
+			# [<p class="body strikeout"></p>
+			也可以按照CSS值完全匹配：
+			css_soup.find_all(class_="body strikeout")
+			# [<p class="body strikeout"></p>]
+			完全匹配class的值时，如果CSS类名的顺序与实际不符，将搜索不到结果：
+			soup.find_all("p",atttrs={"class":"sister"})
+			# [<a class="sister" href="http://example.com/elsie" id="link1">Elsie</a>,
+			#  <a class="sister" href="http://example.com/lacie" id="link2">Lacie</a>,
+			#  <a class="sister" href="http://example.com/tillie" id="link3">Tillie</a>]	
+		5.2.4：string参数
+			1：string参数可以搜索文档中的字符串内容，与.name参数的可选值一样，.string参数阶段后字符串，正则表达式，列表，True
+			soup.find_all(string="Elsie")
+			# [u'Elsie']
+			soup.find_all(string=["Tillie","Elsie","Lacie"])
+			# [u'Elsie',u'Lacie',u'Tillie']
+			soup.find_all(string=re.compile("Dormouse"))
+			[u'The Dormouse's story',u'The Dormouse's story']
+			def is_the_only_string_wuthin_tag(s):
+				retutn (s == s.parent.string)
+			soup.find_all(is_the_only_string_wuthin_tag)
+			# [u"The Dormouse's story", u"The Dormouse's story", u'Elsie', u'Lacie', u'Tillie', u'...']
+			2：string参数还可以与其他参数一起联合使用：
+			soup.find_all("a",string="Elsie")
+			[<a href="http://example.com/elsie" class="sister" id = "link1">Elsie</a>]
+		5.2.5：limit参数：
+			可以用limit参数限制返回的数量，当搜索到了数量达到limit限制的数量时返回结果
+			soup.find_all("a",limit=2)
+			# [<a class="sister" href="http://example.com/elsie" id="link1">Elsie</a>,
+			#  <a class="sister" href="http://example.com/lacie" id="link2">Lacie</a>]
+		5.2.6：recursive参数：
+			使用find_all()方法时，Bs会搜索当前tag的所有子孙节点，如果只想搜索当前节点的直接子节点，可以使用recursive=false参数
+			以一个简单的文档为例：
+				<html>
+				 <head>
+				  <title>
+				   The Dormouse's story
+				  </title>
+				 </head>
+				...
+			是否使用recursive参数的搜索结果：
+			soup.html.find("title")
+			#[<title>The Dormouse's story</title>]
+			soup.html.find_all("title",recursive=False)
+			# []
+			Bs提供的DOM树搜索方法中，都使用了类似的参数定义，但是只有find_all()和find()支持recursive参数
+	5.3：想调用find_all()一样调用tag
+		find_all()方法几乎是Beautiful Soup中最常用的搜索方法，所以定义了他的简写方法。
+		BeautifulSoup对象和tag对象可以被当作一个方法使用，下面两行代码是等价的：
+		soup.find_all("a")
+		soup("a")
+		这两行代码也是等价的
+		soup.title.find_all(string=True)
+		soup.title(string=True)
+	5.4:find()
+		find(name,attrs,recursive,string,**kwargs)
+		find()防止不返回列表，直接返回结果，且只能返回一个
+		soup.find_all("title",limit=1)
+		# [<title>The Dormouse's story</title>]
+		soup.find("title")
+		<title>The Dormouse's story</title>
+		find_all()搜索不到结果时返回空列表，而find()返回None
+		print(soup.find("hfjkle"))
+		None
 		
+		soup.head.title是tag名字的缩写，该简写的原理就是多次调用当前的find(0方法
+		soup.head.title
+		<title>The Dormouse's story</title>
+		soup.find(head).find(title)
+		<title>The Dormouse's story</title>
+	5.5：find_parents()和find_parent()
+		find_parent()和find_parenta()的参数和find()及find_all()一样
+		用来搜索父辈节点
+		find_parent直接返回结果，find_parents()返回列表。
+		a_string=soup.find(string="Lacie")
+		a_string
+		u'Lacie'
+		a_string.find_parents("a")
+		# [<a class="sister" href="http://example.com/lacie" id="link2">Lacie</a>]
+		a_string.find_parent("p")
+		# <p class="story">Once upon a time there were three little sisters; and their names were
+		#  <a class="sister" href="http://example.com/elsie" id="link1">Elsie</a>,
+		#  <a class="sister" href="http://example.com/lacie" id="link2">Lacie</a> and
+		#  <a class="sister" href="http://example.com/tillie" id="link3">Tillie</a>;
+		#  and they lived at the bottom of a well.</p>
+		a_string.find_parent("p",class_="title")
+		#[]		
+	5.6：find_next_siblings()和find_next_sibling()
+		此处不讲解，参考.next_sibling和.next_siblings
+	5.7：find_previous_siblings()和find_previous_sibling()
+		参考.previous_sibling及.previous_siblings
+	5.8：find_all_next和find_next
+		参考.next_element及.next_elements
+	5.9：find_all_previous和find_previous
+		参考.previous_elements
+	5.10：CSS选择器：
+		1:Beautiful Soup支持大部分的CSS选择器，在Tag或BeautifulSoup对象的.select()方法中传入字符串参数，即可使用CSS选择器的语法找到tag
+		soup.select("title")
+		# [<title>The Dormouse's story</title>]
+		soup.select("p nth-of-type(3)")#:nth-of-type(n) 选择器匹配属于父元素的特定类型的第 N 个子元素的每个元素.
+		# [<p class="story">...</p>]
+		2:通过tag标签逐层查找：
+		soup.select(body a)
+		# [<a class="sister" href="http://example.com/elsie" id="link1">Elsie</a>,
+		#  <a class="sister" href="http://example.com/lacie"  id="link2">Lacie</a>,
+		#  <a class="sister" href="http://example.com/tillie" id="link3">Tillie</a>]
+		3:找到某个标签的直接子标签：
+		soup.select("head > title")
+		[<title>The Dormouse's story</title>]
+		soup.select("p > a")
+		# [<a class="sister" href="http://example.com/elsie" id="link1">Elsie</a>,
+		#  <a class="sister" href="http://example.com/lacie"  id="link2">Lacie</a>,
+		#  <a class="sister" href="http://example.com/tillie" id="link3">Tillie</a>]
+		soup.select("p > a:nth-of-type(2)")
+		[<a class="sister" href="http://example.com/lacie" id="link2">Lacie</a>]
+		soup.select("p > #link1") # 选择p标签下的直接id为link1子标签
+		# [<a class="sister" href="http://example.com/elsie" id="link1">Elsie</a>
+		soup.select<body > a>
+		[]
+		4:找到兄弟节点标签：
+		soup.select("#link1 ~ .sisiter")# 选择id=link1后的class=sister所有兄弟节点标签
+		# [<a class="sister" href="http://example.com/lacie" id="link2">Lacie</a>,
+		#  <a class="sister" href="http://example.com/tillie"  id="link3">Tillie</a>]
+		soup.select("#link1 + .sister")# 选择id=link1后的class=sister下一个兄弟节点标签
+		# [<a class="sister" href="http://example.com/lacie" id="link2">Lacie</a>]
+		5:通过CSS类名查找：
+		soup.select(".sister")# 选择class为sister的标签
+		# [<a class="sister" href="http://example.com/elsie" id="link1">Elsie</a>,
+		#  <a class="sister" href="http://example.com/lacie" id="link2">Lacie</a>,
+		#  <a class="sister" href="http://example.com/tillie" id="link3">Tillie</a>]
+		soup.select("[class~=sister]")# class=sister的所有节点
+		# [<a class="sister" href="http://example.com/elsie" id="link1">Elsie</a>,
+		#  <a class="sister" href="http://example.com/lacie" id="link2">Lacie</a>,
+		#  <a class="sister" href="http://example.com/tillie" id="link3">Tillie</a>]
+		6:通过tag的id查找：
+		soup.select("#link1")#选择id为link1的标签
+		# [<a class="sister" href="http://example.com/elsie" id="link1">Elsie</a>]
 
-		
+		soup.select("a#link2")#a节点，且id=link2的节点
+		# [<a class="sister" href="http://example.com/lacie" id="link2">Lacie</a>]
+		7：同时用多种CSS选择器查询元素：
+		soup.select("#link1,#link2")
+		soup.select("#link1,#link2")
+		# [<a class="sister" href="http://example.com/elsie" id="link1">Elsie</a>,
+		#  <a class="sister" href="http://example.com/lacie" id="link2">Lacie</a>]
+		8：通过是否存在某个属性查找：
+		soup.select('a[href]')#所有的a节点有href属性
+		# [<a class="sister" href="http://example.com/elsie" id="link1">Elsie</a>,
+		#  <a class="sister" href="http://example.com/lacie" id="link2">Lacie</a>,
+		#  <a class="sister" href="http://example.com/tillie" id="link3">Tillie</a>]
+		9：通过属性的值查找
+		soup.select('a[href="http://example.com/elsie"]')
+		# [<a class="sister" href="http://example.com/elsie" id="link1">Elsie</a>]
+
+		soup.select('a[href^="http://example.com/"]')
+		# [<a class="sister" href="http://example.com/elsie" id="link1">Elsie</a>,
+		#  <a class="sister" href="http://example.com/lacie" id="link2">Lacie</a>,
+		#  <a class="sister" href="http://example.com/tillie" id="link3">Tillie</a>]
+
+		soup.select('a[href$="tillie"]')
+		# [<a class="sister" href="http://example.com/tillie" id="link3">Tillie</a>]
+
+		soup.select('a[href*=".com/el"]')
+		# [<a class="sister" href="http://example.com/elsie" id="link1">Elsie</a>]
