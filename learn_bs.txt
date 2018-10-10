@@ -594,3 +594,44 @@ soup = BeautifulSoup(html_doc, 'html.parser')
 
 		soup.select('a[href*=".com/el"]')
 		# [<a class="sister" href="http://example.com/elsie" id="link1">Elsie</a>]
+		10：通过语言设置来查找：
+		multilingual_markup = """
+			<p lang="en">Hello</p>
+			<p lang="en-us">Howdy, y'all</p>
+			<p lang="en-gb">Pip-pip, old fruit</p>
+			<p lang="fr">Bonjour mes amis</p>
+		"""
+		multilingual_soup = BeautifulSoup(multilingual_markup)
+		multilingual_soup.select('p[lang]=en')
+		# [<p lang="en">Hello</p>,
+		#  <p lang="en-us">Howdy, y'all</p>,
+		#  <p lang="en-gb">Pip-pip, old fruit</p>]
+		返回查到的元素第一个：
+		soup.select_one(".sister")
+		# <a class="sister" href="http://example.com/elsie" id="link1">Elsie</a>
+6：修改文档树：
+Beautiful Soup的强项是对文档的搜索，但同时也可以方便的修改文档树
+	6.1：修改tag的名称和属新：
+		soup = BeautifulSoup('<b class="boldest">Extremely bold</b>')
+		tag = soup.b
+		tag.name = "blockquote"
+		tag['class'] = "verybold"
+		tag['id']=1
+		tag
+		# <blockquote class="verybold" id="1">Extremely bold</blockquote>
+		del tag['class']
+		del tag['id']
+		tag
+		# <blockquote>Extremely bold</blockquote>
+	6.2：修改.string:
+		markup = '<a href="http://example.com/">I linked to <i>example.com</i></a>'
+		soup = BeautifulSoup(markup)
+
+		tag = soup.a
+		tag.string = "New link text."
+		tag
+		# <a href="http://example.com/">New link text.</a>
+		但是需要注意，如果当前tag包含了其他的tag，那么他的.string属性赋值会覆盖掉原有的内容包括子tag(会修改掉当前tag的所有子节点为修改后的值)，谨慎使用
+	6.3：append:
+		,,,,,,
+	
