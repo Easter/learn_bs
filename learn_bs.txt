@@ -611,7 +611,7 @@ soup = BeautifulSoup(html_doc, 'html.parser')
 		# <a class="sister" href="http://example.com/elsie" id="link1">Elsie</a>
 6：修改文档树：
 Beautiful Soup的强项是对文档的搜索，但同时也可以方便的修改文档树
-	6.1：修改tag的名称和属新：
+	6.1：修改tag的名称和属性：
 		soup = BeautifulSoup('<b class="boldest">Extremely bold</b>')
 		tag = soup.b
 		tag.name = "blockquote"
@@ -632,6 +632,31 @@ Beautiful Soup的强项是对文档的搜索，但同时也可以方便的修改
 		tag
 		# <a href="http://example.com/">New link text.</a>
 		但是需要注意，如果当前tag包含了其他的tag，那么他的.string属性赋值会覆盖掉原有的内容包括子tag(会修改掉当前tag的所有子节点为修改后的值)，谨慎使用
-	6.3：append:
+	6.3：append():
+		Tag.append()方法想tag中添加内容，就好像Python中的.append()方法
+		soup = BeautifulSoup("<a>Foo</a>")
+		soup.a.append("Bar")
+		soup
+		# <html><head></head><body><a>FooBar</a></body></html>
+		soup.a.contents
+		[u'Foo',u'Bar']
+	6.4：NavigableString()和.new_tag()
+		如果想添加一段文本内容到文档中也没问题,可以调用Python的 append() 方法 或调用 NavigableString 的构造方法:
+		soup = BeautifulSoup("<b></b>")
+		tag_append = NavigableString("hello")
+		soup.append(tag_append)
+		soup.b
+		# <b>hello</b>
+		soup.b.contents #之所以用contents查看，，.strings不是返回列表
+		# [u'hello']
+		# 这是Beautiful Soup新添的用法
+		创建一个tag最好的方法是调用工厂方法BeautifulSoup.new_tag()
+		soup = BeautifulSoup("<b></b>")
+		original_tag = soup.b
+		new_tag = BeautifulSoup.new_tag("a",href="http://www.example.com")
+		original_tag.append(new_tag)
+		original_tag
+		<b><a href="http://www.example.com"</a></b>
+		第一个参数作为tag的那么必填，其他的参数选填
+	6.5：insert()
 		,,,,,,
-	
