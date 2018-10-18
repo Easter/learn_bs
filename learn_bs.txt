@@ -659,4 +659,130 @@ Beautiful Soup的强项是对文档的搜索，但同时也可以方便的修改
 		<b><a href="http://www.example.com"</a></b>
 		第一个参数作为tag的那么必填，其他的参数选填
 	6.5：insert()
-		,,,,,,
+		Tag.insert()方法与Tag.append方法类似，区别是不会把新元素添加到父节点.contents属性的最后，而是把元素插入到指定的位置，与Python列表中的.insert方法用法相同：
+		markup = '<a href="http://example.com/">I linked to <i>example.com</i></a>'
+		soup = BeautifulSoup(markup)
+		tag = sou.a
+		tag.insert(1,"but did not endorse ")
+		tag
+		# <a href="http://example.com/">I linked to but did not endorse <i>example.com</i></a>
+		tag.contents
+		# [u'I linked to',u'but did not endorse',<i>example.com</i>]
+	6.5：insert_before()和insert_after()
+		soup = BeautifulSoup("<b>stop</b>")
+		tag = soup.new_tag("i")
+		tag.string = "Don't"
+		soup.b.string.insert_before(tag)
+		soup.b
+		# <b><i>Don't</i><b>
+		insert_after在当前节点后插入内容
+		soup.b.i.insert_after(soup.new_string("ever"))
+		soup.b
+		# <b><i>Don't</i> ever stop</b>
+		soup.b.contents
+		# [<i>Don't</i>,u'ever',u'stop']
+	6.6：clear()
+		# tag.clear()方法用于移除当前tag的内容：
+		markup = '<a href="http://example.com/">I linked to <i>example.com</i></a>'
+		soup = BeautifulSoup(markup)
+		tag = soup.a
+		tag.clear()
+		tag
+		# <a herf = "http://example.com/"></a>
+	6.7：extract()
+		PageElement.extract()方法将当前tag移除文档树，并作为结果返回：
+		markup = '<a href = "http://example.com/">I linked to <i>example.com</i></a>'
+		soup = BeautifulSoup(markup)
+		a_tag = soup.a
+		i_tag = soup.i.extract
+		a_tag
+		# <a href = "http://example.com/">I linked to</a>
+		i_tag:
+		# <i>example.com</i>
+		print(i_tag.parent)
+		None
+		这个方法实际上产生了两个文档树，一个是用来修改原文档的BeautifulSoup对象，另一个是被移除并且返回的tag，被返回的tag可以继续调用extract方法：
+		my_string = i_tag.string.extract()
+		my_string
+		# u'example.com'
+		i_tag
+		# <i></i>
+	6.8：decompose()
+		Tag.decompose()方法将当前节点移除文档树并完全销毁：
+		a_tag = soup.a
+		soup.i.decompose()
+		a_tag
+		# <a href="http://example.com/">I linked to</a>
+	6.9：replace_with
+		PageElement.replace_with()方法移除文档树中的某段内容，并用新tag或文本节点代替它：
+		new_tag = soup = soup.new_tag("b")
+		new_tag.string = "example.net"
+		a_tag.i.replace_with(new_tag)
+		
+		a_tag
+		# <a href="http://example.com/">I linked to <b>example.net</b></a>
+		replace_with()方法返回被代替的tag或文本节点，可以用来浏览或添加到文档树其他地方
+	6.10：wrap()
+		wrap()方法可以对指定的tag元素进行包装，并返回包装后的结果：
+		soup = BeautifulSoup('<p>I wish bold</p>')
+		soup.p.string.wrap(soup.new_tag('b'))
+		# <b>I wish I was bold</b>
+	6.11：unwrap()
+		Tag.unwrap()方法与wrap()方法相反，将移除tag内的所有tag标签，该方法常被用来进行标记的解包：
+		markup = '<a href="http://example.com/">I linked to <i>example.com</i></a>'
+		soup = BeautifulSoup(markup)
+		a_tag = soup.a
+		a_tag.i.unwrap()
+		a_tag
+		# <a href="http://example.com">I linked to example.com</a>
+		与replace_with()相同.unwrap()方法返回被移除的tag
+7：输出：
+	7.1：格式化输出:
+		prettify()方法将Beautiful Soup的文档树格式化以后以Unicode编码输出，每个XML/HTML标签都独占一行
+		markup = '<a href="http://example.com/">I linked to<i>example</i></a>'
+		soup = BeautifulSoup(markup)
+		soup.prettify()
+		# '<html>\n <head>\n </head>\n <body>\n  <a href="http://example.com/">\n...'
+
+		print(soup.prettify())
+		# <html>
+		#  <head>
+		#  </head>
+		#  <body>
+		#   <a href="http://example.com/">
+		#    I linked to
+		#    <i>
+		#     example.com
+		#    </i>
+		#   </a>
+		#  </body>
+		# </html>
+		BeautifulSoup对象和它的tag节点都可以调用prettify()方法：
+		print(soup.a.prettify)
+		# <a href="http://example.com/">
+		#  I linked to
+		#  <i>
+		#   example.com
+		#  </i>
+		# </a>
+	7.2：压缩输出：
+		如果只想得到结果字符串，不重视格式，那么可以对一个BeautifulSoup对象或Tag对象使用python的unicode或str()方法
+		str(soup)
+		# '<html><head></head><body><a href="http://example.com/">I linked to <i>example.com</i></a></body></html>'
+		unicode(soup.a)
+		# u'<a href="http://example.com/">I linked to <i>example.com</i></a>'
+		str()方法返回UTF-8编码的字符串，可以指定编码的设置。
+		还可以调用encode()方法获得字节码或调用decode()方法获得Unicode.
+	7.3：输出格式：
+		Beautiful Soup输出会是将HTML中的特殊字符转换成Unicode,比如”&lquot“:
+		soup = BeautifulSoup("&ldquo;Dammit!&rdquo; he said.")
+		unicode(soup)
+		# u'<html><head></head><body>\u201cDammit!\u201d he said.</body></html>'
+		如果将文档转成字符串，Unicode编码会被编码成UTF-8，这样就无法正确显示HTML特殊字符了：
+		str(soup)
+		# '<html><head></head><body>\xe2\x80\x9cDammit!\xe2\x80\x9d he said.</body></html>'
+	7.4:get_text()
+		注意get_text(0与.string的区别：
+		在此例中，get_text()返回两个字符串的拼接，.string返回None
+		
+	
